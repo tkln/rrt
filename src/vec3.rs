@@ -41,6 +41,14 @@ impl Vec3 {
         let s = *self * rhs;
         s.x + s.y + s.z
     }
+
+    pub fn cross(&self, rhs: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.y * rhs.z - self.z * rhs.y,
+            y: self.z * rhs.x - self.x * rhs.z,
+            z: self.x * rhs.y - self.y * rhs.x
+        }
+    }
 }
 
 impl ops::Add<Vec3> for Vec3 {

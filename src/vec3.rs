@@ -28,7 +28,7 @@ impl Vec3 {
     }
 
     pub fn len(&self) -> f32 {
-        self.len().sqrt()
+        self.len2().sqrt()
     }
 
     pub fn normalized(&self) -> Vec3 {

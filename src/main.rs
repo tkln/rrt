@@ -58,7 +58,7 @@ fn main() {
     for y in 0..img_h {
         for x in 0..img_w {
             let u = (x as f32) / ((img_w - 1) as f32);
-            let v = (y as f32) / ((img_h - 1) as f32);
+            let v = ((img_h - y) as f32) / ((img_h - 1) as f32);
             let ray = Ray::new(orig, lower_left + horiz * u + vert * v - orig);
             img[x + y * img_w] = get_color(&ray, &hittables);
         }

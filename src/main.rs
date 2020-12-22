@@ -17,22 +17,28 @@ fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     }
 }
 
-fn hit_sphere(center: Vec3, radius: f32, ray: &Ray) -> bool {
+fn hit_sphere(center: Vec3, radius: f32, ray: &Ray) -> f32 {
     let oc = ray.orig - center;
     let a = ray.dir.dot(ray.dir);
     let b = 2.0 * oc.dot(ray.dir);
     let c = oc.dot(oc) - radius * radius;
     let d = b * b - 4.0 * a * c;
-    return d > 0.0;
+    if d < 0.0 {
+        return -1.0;
+    } else {
+        return (-b - d.sqrt()) / (2.0 * a);
+    }
 }
 
 fn get_color(ray: &Ray) -> Vec3 {
-    if hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Vec3::new(0.7, 0.3, 0.2);
+    let mut t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray);
+    if  t > 0.0 {
+        let n = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalized();
+        return (n + Vec3::one()) * 0.5;
     }
     /* Fake sky */
     let unit_dir = ray.dir.normalized();
-    let t = 0.5 * (unit_dir.y + 1.0);
+    t = 0.5 * (unit_dir.y + 1.0);
     Vec3::one() * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
 }
 

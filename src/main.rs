@@ -22,9 +22,13 @@ fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
 }
 
 fn get_color(ray: &Ray) -> Vec3 {
-    let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
+    let hittables = hittable::HittableList {
+        hittables: vec![
+            Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
+        ],
+    };
 
-    if let Some(rec) = sphere.hit(ray, 0.0, 999.0) {
+    if let Some(rec) = hittables.hit(ray, 0.0, 999.0) {
         return (rec.n + Vec3::one()) * 0.5;
     }
 

@@ -1,6 +1,7 @@
-use std::mem;
-
 mod vec3;
+mod ray;
+
+use ray::Ray;
 use vec3::Vec3;
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
@@ -16,22 +17,37 @@ fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     }
 }
 
+fn get_color(ray: &Ray) -> Vec3 {
+    /* Fake sky */
+    let unit_dir = ray.dir.normalized();
+    let t = 0.5 * (unit_dir.y + 1.0);
+    Vec3::one() * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
+}
+
 fn main() {
-    let a = Vec3::new(1.0, 2.0, 3.0);
-    let mut b = Vec3::one();
-    b += a;
+    let img_ar = 16.0 / 9.0;
+    let img_w = 400;
+    let img_h = (img_w as f32  / img_ar) as usize;
+    let mut img = vec![Vec3::zero(); img_w * img_h];
 
-    let w = 256;
-    let h = 256;
-    let mut img = vec![Vec3::zero(); w * h];
+    let viewport_h = 2.0;
+    let viewport_w = img_ar * viewport_h;
+    let focal_len = 1.0;
 
-    for x in 0..h {
-        for y in 0..w {
-            img[x + y * w] = Vec3::new((x as f32) / (w as f32),
-                                       (y as f32) / (h as f32),
-                                       0.25);
+    let orig = Vec3::new(0.0, 0.0, 0.0);
+    let horiz = Vec3::new(viewport_w, 0.0, 0.0);
+    let vert = Vec3::new(0.0, viewport_h, 0.0);
+    let lower_left = orig - horiz * 0.5 - vert * 0.5 -
+                     Vec3::new(0.0, 0.0, focal_len);
+
+    for y in 0..img_h {
+        for x in 0..img_w {
+            let u = (x as f32) / ((img_w - 1) as f32);
+            let v = (y as f32) / ((img_h - 1) as f32);
+            let ray = Ray::new(orig, lower_left + horiz * u + vert * v - orig);
+            img[x + y * img_w] = get_color(&ray);
         }
     }
 
-    save_image(w, h, &img);
+    save_image(img_w, img_h, &img);
 }

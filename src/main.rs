@@ -6,7 +6,7 @@ mod hittable;
 use ray::Ray;
 use vec3::Vec3;
 use sphere::Sphere;
-use hittable::Hittable;
+use hittable::{Hittable, HittableList};
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -21,13 +21,7 @@ fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     }
 }
 
-fn get_color(ray: &Ray) -> Vec3 {
-    let hittables = hittable::HittableList {
-        hittables: vec![
-            Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
-        ],
-    };
-
+fn get_color(ray: &Ray, hittables: &HittableList) -> Vec3 {
     if let Some(rec) = hittables.hit(ray, 0.0, 999.0) {
         return (rec.n + Vec3::one()) * 0.5;
     }
@@ -54,12 +48,18 @@ fn main() {
     let lower_left = orig - horiz * 0.5 - vert * 0.5 -
                      Vec3::new(0.0, 0.0, focal_len);
 
+    let hittables = HittableList {
+        hittables: vec![
+            Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
+        ],
+    };
+
     for y in 0..img_h {
         for x in 0..img_w {
             let u = (x as f32) / ((img_w - 1) as f32);
             let v = (y as f32) / ((img_h - 1) as f32);
             let ray = Ray::new(orig, lower_left + horiz * u + vert * v - orig);
-            img[x + y * img_w] = get_color(&ray);
+            img[x + y * img_w] = get_color(&ray, &hittables);
         }
     }
 

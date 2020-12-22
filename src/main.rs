@@ -1,8 +1,12 @@
 mod vec3;
 mod ray;
+mod sphere;
+mod hittable;
 
 use ray::Ray;
 use vec3::Vec3;
+use sphere::Sphere;
+use hittable::Hittable;
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -17,28 +21,16 @@ fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     }
 }
 
-fn hit_sphere(center: Vec3, radius: f32, ray: &Ray) -> f32 {
-    let oc = ray.orig - center;
-    let a = ray.dir.len2();
-    let half_b =  oc.dot(ray.dir);
-    let c = oc.len2() - radius * radius;
-    let d = half_b * half_b -  a * c;
-    if d < 0.0 {
-        return -1.0;
-    } else {
-        return (-half_b - d.sqrt()) / a;
-    }
-}
-
 fn get_color(ray: &Ray) -> Vec3 {
-    let mut t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray);
-    if  t > 0.0 {
-        let n = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalized();
-        return (n + Vec3::one()) * 0.5;
+    let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
+
+    if let Some(rec) = sphere.hit(ray, 0.0, 999.0) {
+        return (rec.n + Vec3::one()) * 0.5;
     }
+
     /* Fake sky */
     let unit_dir = ray.dir.normalized();
-    t = 0.5 * (unit_dir.y + 1.0);
+    let t = 0.5 * (unit_dir.y + 1.0);
     Vec3::one() * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
 }
 

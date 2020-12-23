@@ -35,11 +35,9 @@ impl Hittable for Sphere {
         }
 
         let p = ray.at(root);
-        let rec = HitRecord {
-            p: p,
-            n: (p - self.c) * (1.0 /  self.r),  /* TODO Implement Vec3::Div for f32 */
-            t: root,
-        };
+
+        /* TODO Implement Vec3::Div for f32 */
+        let rec = HitRecord::new(p, (p - self.c) * (1.0 / self.r), root, ray);
         return Some(rec)
     }
 }

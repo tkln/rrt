@@ -51,6 +51,15 @@ impl Vec3 {
     }
 }
 
+impl ops::Neg for Vec3 {
+    type Output = Vec3;
+    fn neg(self) -> Vec3 {
+        Vec3 { x: -self.x,
+               y: -self.y,
+               z: -self.z }
+    }
+}
+
 impl ops::Add<Vec3> for Vec3 {
     type Output = Vec3;
     fn add(self, rhs: Vec3) -> Vec3 {

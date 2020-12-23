@@ -119,3 +119,12 @@ impl ops::MulAssign<f32> for Vec3 {
         *self = *self * rhs;
     }
 }
+
+impl ops::Div<f32> for Vec3 {
+    type Output = Vec3;
+    fn div(self, rhs: f32) -> Vec3 {
+        Vec3 { x: self.x / rhs,
+               y: self.y / rhs,
+               z: self.z / rhs }
+    }
+}

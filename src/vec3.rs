@@ -33,8 +33,7 @@ impl Vec3 {
 
     pub fn normalized(&self) -> Vec3 {
         /* TODO Use fast reciprocal squareroot */
-        let len = self.len2().sqrt();
-        *self * (1.0 / len)
+        *self / self.len()
     }
 
     pub fn dot(&self, rhs: Vec3) -> f32 {

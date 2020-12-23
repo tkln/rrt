@@ -2,6 +2,7 @@ mod vec3;
 mod ray;
 mod sphere;
 mod hittable;
+mod material;
 mod rng;
 
 use ray::Ray;
@@ -9,6 +10,7 @@ use vec3::Vec3;
 use sphere::Sphere;
 use hittable::{Hittable, HittableList};
 use rng::*;
+use material::Lambertian;
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -25,13 +27,15 @@ fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
 
 fn trace_ray(ray: &Ray, hittables: &HittableList, rng: &mut RNG, depth: u32) -> Vec3 {
     if depth <= 0 {
-        return Vec3::new(0.0, 0.0, 0.0);
+        return Vec3::zero();
     }
 
-    if let Some(rec) = hittables.hit(ray, 0.00001, 9999.0) {
-        let target = rec.p + rec.n + random_in_unit_sphere(rng);
-        let bounce = Ray::new(rec.p, target - rec.p);
-        return trace_ray(&bounce, hittables, rng, depth - 1) * 0.5;
+    if let Some(rec) = hittables.hit(ray, 0.00001, 9999.0, rng) {
+        if let Some((attennuation, scattered)) = rec.mat.scatter(ray, &rec, rng) {
+            return trace_ray(&scattered, hittables, rng, depth - 1) * attennuation;
+        } else {
+            return Vec3::zero();
+        }
     }
 
     /* Fake sky */
@@ -80,10 +84,13 @@ fn main() {
 
     let cam = Camera::new(img_ar);
 
+    let lambertian_b = Box::new(Lambertian::new(Vec3::new(0.2, 0.3, 0.7)));
+    let lambertian_r = Lambertian::new(Vec3::new(0.7, 0.3, 0.2));
+
     let hittables = HittableList {
         hittables: vec![
-            Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
-            Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)),
+            Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, lambertian_b)),
+            Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Box::new(lambertian_r))),
         ],
     };
 

@@ -40,13 +40,13 @@ impl Hittable for HittableList {
             }
         }
 
-        let items = &self.hittables;
+        let iter = (&self.hittables).into_iter();
         /* Call Hittable::hit on each an filter out Nones */
-        let mut results = items.into_iter().filter_map(|item| item.hit(ray, t_min, t_max)).peekable();
-        if results.peek().is_none() {
+        let mut res = iter.filter_map(|item| item.hit(ray, t_min, t_max)).peekable();
+        if res.peek().is_none() {
             return None;
         }
-        let min = results.min_by(hit_ord).unwrap();
+        let min = res.min_by(hit_ord).unwrap();
         return Some(min);
     }
 }

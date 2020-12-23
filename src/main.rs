@@ -1,3 +1,7 @@
+use rand::{Rng, SeedableRng};
+use rand::rngs::SmallRng;
+use rand::distributions::Uniform;
+
 mod vec3;
 mod ray;
 mod sphere;
@@ -66,6 +70,11 @@ fn main() {
     let img_h = (img_w as f32  / img_ar) as usize;
     let mut img = vec![Vec3::zero(); img_w * img_h];
 
+    let samples_per_pixel = 100;
+
+    let mut rng = SmallRng::from_entropy();
+    let side = Uniform::new(0.0_f32, 1.0_f32);
+
     let cam = Camera::new(img_ar);
 
     let hittables = HittableList {
@@ -77,10 +86,14 @@ fn main() {
 
     for y in 0..img_h {
         for x in 0..img_w {
-            let u = (x as f32) / ((img_w - 1) as f32);
-            let v = ((img_h - y) as f32) / ((img_h - 1) as f32);
-            let ray = cam.get_ray(u, v);
-            img[x + y * img_w] = get_color(&ray, &hittables);
+            let sample_pixel = | pixel, _ | -> Vec3 {
+                let u = (x as f32 + rng.sample(side)) / ((img_w - 1) as f32);
+                let v = ((img_h - y) as f32 + rng.sample(side)) / ((img_h - 1) as f32);
+                let ray = cam.get_ray(u, v);
+                pixel + get_color(&ray, &hittables)
+            };
+            let sum = (0..samples_per_pixel).fold(Vec3::zero(), sample_pixel);
+            img[x + y * img_w] = sum / (samples_per_pixel as f32);
         }
     }
 

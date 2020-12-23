@@ -56,6 +56,10 @@ impl Vec3 {
             z: self.z.sqrt(),
         }
     }
+
+    pub fn reflect(v: Self, n: Self) -> Self {
+        v - n * 2.0 * v.dot(n)
+    }
 }
 
 impl ops::Neg for Vec3 {

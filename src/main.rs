@@ -10,7 +10,7 @@ use vec3::Vec3;
 use sphere::Sphere;
 use hittable::{Hittable, HittableList};
 use rng::*;
-use material::Lambertian;
+use material::{Lambertian, Metal};
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -84,12 +84,15 @@ fn main() {
 
     let cam = Camera::new(img_ar);
 
-    let lambertian_b = Box::new(Lambertian::new(Vec3::new(0.2, 0.3, 0.7)));
+    let lambertian_b = Lambertian::new(Vec3::new(0.2, 0.3, 0.7));
     let lambertian_r = Lambertian::new(Vec3::new(0.7, 0.3, 0.2));
+    let metal_g = Metal::new(Vec3::new(0.2, 0.7, 0.3), 0.3);
 
     let hittables = HittableList {
         hittables: vec![
-            Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, lambertian_b)),
+            Box::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Box::new(metal_g))),
+            Box::new(Sphere::new(Vec3::new(1.0, 1.0, -1.0), 0.5, Box::new(metal_g))),
+            Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Box::new(lambertian_b))),
             Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Box::new(lambertian_r))),
         ],
     };

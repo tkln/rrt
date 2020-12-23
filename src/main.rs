@@ -25,9 +25,48 @@ fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     }
 }
 
-fn get_color(ray: &Ray, hittables: &HittableList) -> Vec3 {
-    if let Some(rec) = hittables.hit(ray, 0.0, 999.0) {
-        return (rec.n + Vec3::one()) * 0.5;
+struct RNG {
+    side_11: Uniform<f32>,
+    side_01: Uniform<f32>,
+    rng: SmallRng,
+}
+
+impl RNG {
+    fn new() -> RNG {
+        RNG {
+            side_11: Uniform::new(-1.0, 1.0),
+            side_01: Uniform::new(0.0, 1.0),
+            rng: SmallRng::from_entropy(),
+        }
+    }
+
+    fn sample_11(&mut self) -> f32 {
+        self.rng.sample(self.side_11)
+    }
+
+    fn sample_01(&mut self) -> f32 {
+        self.rng.sample(self.side_01)
+    }
+}
+
+fn random_in_unit_sphere(rng: &mut RNG) -> Vec3 {
+    loop {
+        let p = Vec3::new(rng.sample_11(), rng.sample_11(), rng.sample_11());
+        if p.len2() < 1.0 {
+            return p;
+        }
+    }
+}
+
+fn trace_ray(ray: &Ray, hittables: &HittableList, rng: &mut RNG, depth: u32) -> Vec3 {
+    if depth <= 0 {
+        return Vec3::new(0.0, 0.0, 0.0);
+    }
+
+    if let Some(rec) = hittables.hit(ray, 0.00001, 9999.0) {
+        let target = rec.p + rec.n + random_in_unit_sphere(rng);
+        let bounce = Ray::new(rec.p, target - rec.p);
+        return trace_ray(&bounce, hittables, rng, depth - 1) * 0.5;
     }
 
     /* Fake sky */
@@ -72,8 +111,7 @@ fn main() {
 
     let samples_per_pixel = 100;
 
-    let mut rng = SmallRng::from_entropy();
-    let side = Uniform::new(0.0_f32, 1.0_f32);
+    let mut rng = RNG::new();
 
     let cam = Camera::new(img_ar);
 
@@ -84,16 +122,20 @@ fn main() {
         ],
     };
 
+    let scale = 1.0 / samples_per_pixel as f32;
+
     for y in 0..img_h {
+        eprint!("\r{}", (y as f32 / img_h as f32) * 100.0);
         for x in 0..img_w {
             let sample_pixel = | pixel, _ | -> Vec3 {
-                let u = (x as f32 + rng.sample(side)) / ((img_w - 1) as f32);
-                let v = ((img_h - y) as f32 + rng.sample(side)) / ((img_h - 1) as f32);
+                let u = (x as f32 + rng.sample_01()) / ((img_w - 1) as f32);
+                let v = ((img_h - y) as f32 + rng.sample_01()) / ((img_h - 1) as f32);
                 let ray = cam.get_ray(u, v);
-                pixel + get_color(&ray, &hittables)
+                pixel + trace_ray(&ray, &hittables, &mut rng, 50)
             };
             let sum = (0..samples_per_pixel).fold(Vec3::zero(), sample_pixel);
-            img[x + y * img_w] = sum / (samples_per_pixel as f32);
+            let pixel = (sum * scale).sqrt();
+            img[x + y * img_w] = pixel;
         }
     }
 

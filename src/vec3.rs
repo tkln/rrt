@@ -49,6 +49,14 @@ impl Vec3 {
             z: self.x * rhs.y - self.y * rhs.x
         }
     }
+
+    pub fn sqrt(self) -> Self {
+        Vec3 {
+            x: self.x.sqrt(),
+            y: self.y.sqrt(),
+            z: self.z.sqrt(),
+        }
+    }
 }
 
 impl ops::Neg for Vec3 {

@@ -1,16 +1,14 @@
-use rand::{Rng, SeedableRng};
-use rand::rngs::SmallRng;
-use rand::distributions::Uniform;
-
 mod vec3;
 mod ray;
 mod sphere;
 mod hittable;
+mod rng;
 
 use ray::Ray;
 use vec3::Vec3;
 use sphere::Sphere;
 use hittable::{Hittable, HittableList};
+use rng::*;
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -22,39 +20,6 @@ fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
             print!("{} {} {} ", p.x as u32, p.y as u32, p.z as u32);
         }
         println!("");
-    }
-}
-
-struct RNG {
-    side_11: Uniform<f32>,
-    side_01: Uniform<f32>,
-    rng: SmallRng,
-}
-
-impl RNG {
-    fn new() -> RNG {
-        RNG {
-            side_11: Uniform::new(-1.0, 1.0),
-            side_01: Uniform::new(0.0, 1.0),
-            rng: SmallRng::from_entropy(),
-        }
-    }
-
-    fn sample_11(&mut self) -> f32 {
-        self.rng.sample(self.side_11)
-    }
-
-    fn sample_01(&mut self) -> f32 {
-        self.rng.sample(self.side_01)
-    }
-}
-
-fn random_in_unit_sphere(rng: &mut RNG) -> Vec3 {
-    loop {
-        let p = Vec3::new(rng.sample_11(), rng.sample_11(), rng.sample_11());
-        if p.len2() < 1.0 {
-            return p;
-        }
     }
 }
 

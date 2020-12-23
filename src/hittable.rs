@@ -1,5 +1,6 @@
 use crate::Vec3;
 use crate::Ray;
+use crate::rng::RNG;
 
 pub struct HitRecord {
     pub p: Vec3,

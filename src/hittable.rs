@@ -6,14 +6,14 @@ use crate::rng::RNG;
 pub struct HitRecord<'a> {
     pub p: Vec3,
     pub n: Vec3,
-    pub mat: &'a Box<dyn Material>,
+    pub mat: &'a dyn Material,
     pub t: f32,
     pub front_face: bool,
 }
 
 impl HitRecord<'_> {
     pub fn new<'a>(p: Vec3, out_normal: Vec3, t: f32, ray: &Ray,
-               material: &'a Box<dyn Material>) -> HitRecord<'a> {
+                   material: &'a dyn Material) -> HitRecord<'a> {
         let front_face = ray.dir.dot(out_normal) < 0.0;
         HitRecord {
             p: p,
@@ -29,11 +29,11 @@ pub trait Hittable {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, rng: &mut RNG) -> Option<HitRecord>;
 }
 
-pub struct HittableList {
-    pub hittables: Vec<Box<dyn Hittable>>,
+pub struct HittableList<'a> {
+    pub hittables: Vec<&'a dyn Hittable>,
 }
 
-impl Hittable for HittableList {
+impl Hittable for HittableList<'_> {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, rng: &mut RNG) -> Option<HitRecord> {
         fn hit_ord(hit_a: &HitRecord, hit_b: &HitRecord) -> std::cmp::Ordering {
             if hit_a.t == hit_b.t {

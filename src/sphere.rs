@@ -4,19 +4,19 @@ use crate::hittable::{Hittable, HitRecord};
 use crate::material::Material;
 use crate::rng::RNG;
 
-pub struct Sphere {
+pub struct Sphere<'a> {
     pub c: Vec3,
     pub r: f32,
-    mat: Box<dyn Material>,
+    mat: &'a dyn Material,
 }
 
-impl Sphere {
-    pub fn new(center: Vec3, radius: f32, mat: Box<dyn Material>) -> Sphere {
+impl Sphere<'_> {
+    pub fn new(center: Vec3, radius: f32, mat: &dyn Material) -> Sphere {
         Sphere { c: center, r: radius, mat: mat }
     }
 }
 
-impl Hittable for Sphere {
+impl Hittable for Sphere<'_> {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, _rng: &mut RNG) -> Option<HitRecord> {
         let oc = ray.orig - self.c;
         let a = ray.dir.len2();
@@ -39,6 +39,6 @@ impl Hittable for Sphere {
 
         let p = ray.at(root);
 
-        Some(HitRecord::new(p, (p - self.c) / self.r, root, ray, &self.mat))
+        Some(HitRecord::new(p, (p - self.c) / self.r, root, ray, self.mat))
     }
 }

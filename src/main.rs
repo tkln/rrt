@@ -88,12 +88,17 @@ fn main() {
     let lambertian_r = Lambertian::new(Vec3::new(0.7, 0.3, 0.2));
     let metal_g = Metal::new(Vec3::new(0.2, 0.7, 0.3), 0.3);
 
+    let sphere_large = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, &(lambertian_r));
+    let sphere0 = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, &(metal_g));
+    let sphere1 = Sphere::new(Vec3::new(1.0, 1.0, -1.0), 0.5, &(metal_g));
+    let sphere2 = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, &(lambertian_b));
+
     let hittables = HittableList {
         hittables: vec![
-            Box::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Box::new(metal_g))),
-            Box::new(Sphere::new(Vec3::new(1.0, 1.0, -1.0), 0.5, Box::new(metal_g))),
-            Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Box::new(lambertian_b))),
-            Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Box::new(lambertian_r))),
+            &sphere0,
+            &sphere1,
+            &sphere2,
+            &sphere_large,
         ],
     };
 

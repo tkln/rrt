@@ -10,7 +10,7 @@ use vec3::Vec3;
 use sphere::Sphere;
 use hittable::{Hittable, HittableList};
 use rng::*;
-use material::{Lambertian, Metal};
+use material::{Lambertian, Metal, Dielectric};
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -87,17 +87,21 @@ fn main() {
     let lambertian_b = Lambertian::new(Vec3::new(0.2, 0.3, 0.7));
     let lambertian_r = Lambertian::new(Vec3::new(0.7, 0.3, 0.2));
     let metal_g = Metal::new(Vec3::new(0.2, 0.7, 0.3), 0.3);
+    let metal_r = Metal::new(Vec3::new(0.7, 0.2, 0.3), 0.0);
+    let dielectric = Dielectric::new(1.5);
 
     let sphere_large = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, &(lambertian_r));
-    let sphere0 = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, &(metal_g));
+    let sphere0 = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, &(dielectric));
     let sphere1 = Sphere::new(Vec3::new(1.0, 1.0, -1.0), 0.5, &(metal_g));
     let sphere2 = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, &(lambertian_b));
+    let sphere3 = Sphere::new(Vec3::new(3.0, 0.0, -3.0), 0.5, &(metal_r));
 
     let hittables = HittableList {
         hittables: vec![
             &sphere0,
             &sphere1,
             &sphere2,
+            &sphere3,
             &sphere_large,
         ],
     };

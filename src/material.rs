@@ -73,8 +73,18 @@ impl Material for Dielectric {
             self.ir
         };
         let unit_dir = ray_in.dir.normalized();
-        let refracted = Vec3::refract(unit_dir, rec.n, refraction_ratio);
-        let scattered = Ray::new(rec.p, refracted);
+
+        let cos_theta = (-unit_dir).dot(rec.n).min(1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+        let no_refract = refraction_ratio * sin_theta > 1.0;
+
+        let dir = if no_refract {
+            Vec3::reflect(unit_dir, rec.n)
+        } else {
+            Vec3::refract(unit_dir, rec.n, refraction_ratio)
+        };
+
+        let scattered = Ray::new(rec.p, dir);
         Some((attenuation, scattered))
     }
 }

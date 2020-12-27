@@ -1,4 +1,5 @@
 use std::ops;
+use std::ops::{Index, IndexMut};
 
 #[repr(align(16))] /* Align for SSE */
 #[derive(PartialEq, Debug, Copy, Clone)]
@@ -29,6 +30,14 @@ impl Vec3 {
 
     pub fn len(&self) -> f32 {
         self.len2().sqrt()
+    }
+
+    pub fn recip(&self) -> Vec3 {
+        Vec3 {
+            x: 1.0 / self.x,
+            y: 1.0 / self.y,
+            z: 1.0 / self.z,
+        }
     }
 
     pub fn normalized(&self) -> Vec3 {
@@ -144,5 +153,28 @@ impl ops::Div<f32> for Vec3 {
         Vec3 { x: self.x / rhs,
                y: self.y / rhs,
                z: self.z / rhs }
+    }
+}
+
+impl Index<usize> for Vec3 {
+    type Output = f32;
+    fn index(&self, i: usize) -> &f32 {
+        match i {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => &0.0,
+        }
+    }
+}
+
+impl IndexMut<usize> for Vec3 {
+    fn index_mut(&mut self, i: usize) -> &mut f32 {
+        match i {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
+            _ => &mut self.z, /* XXX */
+        }
     }
 }

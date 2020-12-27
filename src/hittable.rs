@@ -2,6 +2,7 @@ use crate::Vec3;
 use crate::Ray;
 use crate::material::Material;
 use crate::rng::RNG;
+use crate::bvh::AABB;
 
 pub struct HitRecord<'a> {
     pub p: Vec3,
@@ -27,6 +28,7 @@ impl HitRecord<'_> {
 
 pub trait Hittable {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, rng: &mut RNG) -> Option<HitRecord>;
+    fn get_aabb(&self) -> Option<AABB>;
 }
 
 pub struct HittableList<'a> {
@@ -53,5 +55,15 @@ impl Hittable for HittableList<'_> {
         }
         let min = res.min_by(hit_ord).unwrap();
         return Some(min);
+    }
+
+    fn get_aabb(&self) -> Option<AABB> {
+        let iter = (&self.hittables).into_iter();
+        let mut res = iter.filter_map(|item| item.get_aabb()).peekable();
+        if res.peek().is_none() {
+            return None;
+        }
+        let aabb = res.fold(AABB::zero(), |a, b| { AABB::union(&a, &b) });
+        return Some(aabb);
     }
 }

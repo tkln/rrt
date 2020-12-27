@@ -5,6 +5,7 @@ mod hittable;
 mod material;
 mod rng;
 mod camera;
+mod bvh;
 
 use ray::Ray;
 use vec3::Vec3;

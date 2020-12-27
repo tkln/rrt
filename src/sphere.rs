@@ -3,6 +3,7 @@ use crate::Ray;
 use crate::hittable::{Hittable, HitRecord};
 use crate::material::Material;
 use crate::rng::RNG;
+use crate::bvh::AABB;
 
 pub struct Sphere<'a> {
     pub c: Vec3,
@@ -40,5 +41,10 @@ impl Hittable for Sphere<'_> {
         let p = ray.at(root);
 
         Some(HitRecord::new(p, (p - self.c) / self.r, root, ray, self.mat))
+    }
+
+    fn get_aabb(&self) -> Option<AABB> {
+        let r = Vec3::new(self.r, self.r, self.r);
+        Some(AABB::new(self.c - r, self.c + r))
     }
 }

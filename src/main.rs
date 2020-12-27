@@ -52,8 +52,10 @@ struct Camera {
 }
 
 impl Camera {
-    fn new(ar: f32) -> Camera {
-        let viewport_h = 2.0;
+    fn new(ar: f32, vfov: f32) -> Camera {
+        let theta = (vfov / 180.0) * std::f32::consts::PI;
+        let h = (theta / 2.0).tan();
+        let viewport_h = 2.0 * h;
         let viewport_w = ar * viewport_h;
         let focal_len = 1.0;
 
@@ -82,7 +84,7 @@ fn main() {
 
     let mut rng = RNG::new();
 
-    let cam = Camera::new(img_ar);
+    let cam = Camera::new(img_ar, 100.0);
 
     let lambertian_b = Lambertian::new(Vec3::new(0.2, 0.3, 0.7));
     let lambertian_r = Lambertian::new(Vec3::new(0.7, 0.3, 0.2));

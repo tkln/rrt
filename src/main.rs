@@ -49,10 +49,15 @@ struct Camera {
     lower_left: Vec3,
     horiz: Vec3,
     vert: Vec3,
+    w: Vec3,
+    u: Vec3,
+    v: Vec3,
+    lens_radius: f32,
 }
 
 impl Camera {
-    fn new(pos: Vec3, tgt: Vec3, up: Vec3, ar: f32, vfov: f32) -> Camera {
+    fn new(pos: Vec3, tgt: Vec3, up: Vec3,
+           ar: f32, vfov: f32, aperture: f32, focus: f32) -> Camera {
         let theta = (vfov / 180.0) * std::f32::consts::PI;
         let h = (theta / 2.0).tan();
         let viewport_h = 2.0 * h;
@@ -63,16 +68,24 @@ impl Camera {
         let v = w.cross(u);
 
         let orig = pos;
-        let horiz = u * viewport_w;
-        let vert = v * viewport_h;
-        let lower_left = orig - horiz * 0.5 - vert * 0.5 - w;
+        let horiz = u * viewport_w * focus;
+        let vert = v * viewport_h * focus;
+        let lower_left = orig - horiz * 0.5 - vert * 0.5 - w * focus;
 
-        Camera { orig: orig, lower_left: lower_left, horiz: horiz, vert: vert }
+        let lens_radius = aperture / 2.0;
+
+        Camera { orig: orig, lower_left: lower_left,
+                 horiz: horiz, vert: vert,
+                 w: w, u: u, v: v,
+                 lens_radius: lens_radius }
     }
 
-    fn get_ray(&self, u: f32, v: f32) -> Ray {
-        let dir = self.lower_left + self.horiz * u + self.vert * v - self.orig;
-        Ray::new(self.orig, dir)
+    fn get_ray(&self, s: f32, t: f32, rng: &mut RNG) -> Ray {
+        let rd = random_in_unit_disk(rng) * self.lens_radius ;
+        let offset = self.u * rd.x + self.v * rd.y;
+
+        let dir = self.lower_left + self.horiz * s + self.vert * t - self.orig - offset;
+        Ray::new(self.orig + offset, dir)
     }
 }
 
@@ -86,8 +99,11 @@ fn main() {
 
     let mut rng = RNG::new();
 
-    let cam = Camera::new(Vec3::new(-2.0, 2.0, 1.0), Vec3::new(0.0, 0.0, -1.0),
-                          Vec3::new(0.0, 1.0, 0.0), img_ar, 100.0);
+    let cam_pos = Vec3::new(3.0, 3.0, 2.0);
+    let cam_tgt = Vec3::new(0.0, 0.0, -1.0);
+    let cam_up = Vec3::new(0.0, 1.0, 0.0);
+    let cam_focus = (cam_tgt - cam_pos).len();
+    let cam = Camera::new(cam_pos, cam_tgt, cam_up, img_ar, 20.0, 1.0, cam_focus);
 
     let lambertian_b = Lambertian::new(Vec3::new(0.2, 0.3, 0.7));
     let lambertian_r = Lambertian::new(Vec3::new(0.7, 0.3, 0.2));
@@ -120,7 +136,7 @@ fn main() {
             let sample_pixel = | pixel, _ | -> Vec3 {
                 let u = (x as f32 + rng.sample_01()) / ((img_w - 1) as f32);
                 let v = ((img_h - y) as f32 + rng.sample_01()) / ((img_h - 1) as f32);
-                let ray = cam.get_ray(u, v);
+                let ray = cam.get_ray(u, v, &mut rng);
                 pixel + trace_ray(&ray, &hittables, &mut rng, 50)
             };
             let sum = (0..samples_per_pixel).fold(Vec3::zero(), sample_pixel);

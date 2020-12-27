@@ -41,6 +41,15 @@ pub fn random_in_unit_sphere(rng: &mut RNG) -> Vec3 {
     }
 }
 
+pub fn random_in_unit_disk(rng: &mut RNG) -> Vec3 {
+    loop {
+        let p = Vec3::new(rng.sample_11(), rng.sample_11(), 0.0);
+        if p.len2() < 1.0 {
+            return p;
+        }
+    }
+}
+
 pub fn random_unit_vector(rng: &mut RNG) -> Vec3 {
     /* XXX */
     random_in_unit_sphere(rng)

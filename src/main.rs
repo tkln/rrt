@@ -4,6 +4,7 @@ mod sphere;
 mod hittable;
 mod material;
 mod rng;
+mod camera;
 
 use ray::Ray;
 use vec3::Vec3;
@@ -11,6 +12,7 @@ use sphere::Sphere;
 use hittable::{Hittable, HittableList};
 use rng::*;
 use material::{Lambertian, Metal, Dielectric};
+use camera::Camera;
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -44,51 +46,6 @@ fn trace_ray(ray: &Ray, hittables: &HittableList, rng: &mut RNG, depth: u32) -> 
     Vec3::one() * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
 }
 
-struct Camera {
-    orig: Vec3,
-    lower_left: Vec3,
-    horiz: Vec3,
-    vert: Vec3,
-    w: Vec3,
-    u: Vec3,
-    v: Vec3,
-    lens_radius: f32,
-}
-
-impl Camera {
-    fn new(pos: Vec3, tgt: Vec3, up: Vec3,
-           ar: f32, vfov: f32, aperture: f32, focus: f32) -> Camera {
-        let theta = (vfov / 180.0) * std::f32::consts::PI;
-        let h = (theta / 2.0).tan();
-        let viewport_h = 2.0 * h;
-        let viewport_w = ar * viewport_h;
-
-        let w = (pos - tgt).normalized();
-        let u = up.cross(w).normalized();
-        let v = w.cross(u);
-
-        let orig = pos;
-        let horiz = u * viewport_w * focus;
-        let vert = v * viewport_h * focus;
-        let lower_left = orig - horiz * 0.5 - vert * 0.5 - w * focus;
-
-        let lens_radius = aperture / 2.0;
-
-        Camera { orig: orig, lower_left: lower_left,
-                 horiz: horiz, vert: vert,
-                 w: w, u: u, v: v,
-                 lens_radius: lens_radius }
-    }
-
-    fn get_ray(&self, s: f32, t: f32, rng: &mut RNG) -> Ray {
-        let rd = random_in_unit_disk(rng) * self.lens_radius ;
-        let offset = self.u * rd.x + self.v * rd.y;
-
-        let dir = self.lower_left + self.horiz * s + self.vert * t - self.orig - offset;
-        Ray::new(self.orig + offset, dir)
-    }
-}
-
 fn main() {
     let img_ar = 16.0 / 9.0;
     let img_w = 400;
@@ -103,7 +60,7 @@ fn main() {
     let cam_tgt = Vec3::new(0.0, 0.0, -1.0);
     let cam_up = Vec3::new(0.0, 1.0, 0.0);
     let cam_focus = (cam_tgt - cam_pos).len();
-    let cam = Camera::new(cam_pos, cam_tgt, cam_up, img_ar, 20.0, 1.0, cam_focus);
+    let cam = Camera::new(cam_pos, cam_tgt, cam_up, img_ar, 20.0, 0.2, cam_focus);
 
     let lambertian_b = Lambertian::new(Vec3::new(0.2, 0.3, 0.7));
     let lambertian_r = Lambertian::new(Vec3::new(0.7, 0.3, 0.2));

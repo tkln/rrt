@@ -1,5 +1,5 @@
-use rand::{Rng, SeedableRng};
-use rand::rngs::SmallRng;
+use rand::Rng;
+use rand::rngs::ThreadRng;
 use rand::distributions::Uniform;
 
 use crate::Vec3;
@@ -7,7 +7,7 @@ use crate::Vec3;
 pub struct RNG {
     side_11: Uniform<f32>,
     side_01: Uniform<f32>,
-    rng: SmallRng,
+    rng: ThreadRng,
 }
 
 impl RNG {
@@ -15,7 +15,7 @@ impl RNG {
         RNG {
             side_11: Uniform::new(-1.0, 1.0),
             side_01: Uniform::new(0.0, 1.0),
-            rng: SmallRng::from_entropy(),
+            rng: ThreadRng::default(),
         }
     }
 

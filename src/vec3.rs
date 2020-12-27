@@ -60,6 +60,13 @@ impl Vec3 {
     pub fn reflect(v: Self, n: Self) -> Self {
         v - n * 2.0 * v.dot(n)
     }
+
+    pub fn refract(uv: Self, n: Self, r_eta: f32) -> Self {
+        let cos_theta = (-uv).dot(n).min(1.0);
+        let r_out_perp = (uv + n * cos_theta ) * r_eta;
+        let r_out_parallel = -n * (1.0 - r_out_perp.len2()).abs().sqrt();
+        r_out_perp + r_out_parallel
+    }
 }
 
 impl ops::Neg for Vec3 {

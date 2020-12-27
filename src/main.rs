@@ -104,6 +104,7 @@ fn main() {
 
     let scale = 1.0 / samples_per_pixel as f32;
 
+    let render_start = std::time::Instant::now();
     for y in 0..img_h {
         eprint!("\r{}", (y as f32 / img_h as f32) * 100.0);
         for x in 0..img_w {
@@ -118,6 +119,10 @@ fn main() {
             img[x + y * img_w] = pixel;
         }
     }
+    let render_finish = std::time::Instant::now();
+    let render_time = render_finish - render_start;
+
+    eprintln!("\nDone in {:?}!", render_time);
 
     save_image(img_w, img_h, &img);
 }

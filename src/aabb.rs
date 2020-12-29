@@ -1,5 +1,6 @@
 use crate::Vec3;
 use crate::Ray;
+use crate::hittable::Hittable;
 
 #[derive(Copy, Clone)]
 pub enum Axis {
@@ -47,14 +48,23 @@ impl AABB {
         return true;
     }
 
-    pub fn union(box_a: &AABB, box_b: &AABB) -> AABB {
-        let min = Vec3::new(box_a.min.x.min(box_b.min.x),
-                            box_a.min.y.min(box_b.min.y),
-                            box_a.min.z.min(box_b.min.z));
-        let max = Vec3::new(box_a.max.x.max(box_b.max.x),
-                            box_a.max.y.max(box_b.max.y),
-                            box_a.max.z.max(box_b.max.z));
-        AABB::new(min, max)
+    pub fn union(hittables: &[& dyn Hittable]) -> Option<AABB> {
+        fn do_union(a: AABB, b: AABB) -> AABB {
+            let min = Vec3::new(a.min.x.min(b.min.x),
+                                a.min.y.min(b.min.y),
+                                a.min.z.min(b.min.z));
+            let max = Vec3::new(a.max.x.max(b.max.x),
+                                a.max.y.max(b.max.y),
+                                a.max.z.max(b.max.z));
+            AABB::new(min, max)
+        };
+        let items = hittables.into_iter();
+        let mut res = items.filter_map(|hittable| hittable.get_aabb()).peekable();
+        if res.peek().is_none() {
+            return None;
+        }
+        let aabb = res.fold(AABB::zero(), do_union);
+        return Some(aabb);
     }
 
     pub fn get_longest_axis(&self) -> Axis {

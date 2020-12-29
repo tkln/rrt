@@ -58,12 +58,6 @@ impl Hittable for HittableList<'_> {
     }
 
     fn get_aabb(&self) -> Option<AABB> {
-        let iter = (&self.hittables).into_iter();
-        let mut res = iter.filter_map(|item| item.get_aabb()).peekable();
-        if res.peek().is_none() {
-            return None;
-        }
-        let aabb = res.fold(AABB::zero(), |a, b| { AABB::union(&a, &b) });
-        return Some(aabb);
+        AABB::union(&self.hittables)
     }
 }

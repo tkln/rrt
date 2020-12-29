@@ -40,6 +40,14 @@ impl Vec3 {
         }
     }
 
+    pub fn abs(&self) -> Vec3 {
+        Vec3 {
+            x: self.x.abs(),
+            y: self.y.abs(),
+            z: self.z.abs(),
+        }
+    }
+
     pub fn normalized(&self) -> Vec3 {
         /* TODO Use fast reciprocal squareroot */
         *self / self.len()

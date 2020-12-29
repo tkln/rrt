@@ -84,13 +84,13 @@ impl Hittable for BVH<'_> {
                     return None
                 }
 
-                let hit_left = left.hit(ray, t_min, t_max, rng);
-                let hit_right = right.hit(ray, t_min, t_max, rng);
+                let hit_left = &left.hit(ray, t_min, t_max, rng);
+                let hit_right = &right.hit(ray, t_min, t_max, rng);
 
                 match (hit_left, hit_right) {
-                    (Some(l), Some(r))  => Some(if l.t < r.t { l } else { r }),
-                    (None, Some(r))     => Some(r),
-                    (Some(l), None)     => Some(l),
+                    (Some(l), Some(r))  => Some(if l.t < r.t { *l } else { *r }),
+                    (None, Some(r))     => Some(*r),
+                    (Some(l), None)     => Some(*l),
                     (None, None)        => None,
                 }
             }

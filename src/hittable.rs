@@ -4,6 +4,7 @@ use crate::material::Material;
 use crate::rng::RNG;
 use crate::aabb::AABB;
 
+#[derive(Copy, Clone)]
 pub struct HitRecord<'a> {
     pub p: Vec3,
     pub n: Vec3,

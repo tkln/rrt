@@ -15,6 +15,7 @@ use hittable::{Hittable, HittableList};
 use rng::*;
 use material::{Lambertian, Metal, Dielectric};
 use camera::Camera;
+use bvh::BVH;
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -29,7 +30,7 @@ fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     }
 }
 
-fn trace_ray(ray: &Ray, hittables: &HittableList, rng: &mut RNG, depth: u32) -> Vec3 {
+fn trace_ray<T: Hittable>(ray: &Ray, hittables: &T, rng: &mut RNG, depth: u32) -> Vec3 {
     if depth <= 0 {
         return Vec3::zero();
     }
@@ -86,6 +87,17 @@ fn main() {
         ],
     };
 
+    let bvh = BVH::new(vec![
+            &sphere0,
+            &sphere1,
+            &sphere2,
+            &sphere3,
+            &sphere_large,
+        ],
+    );
+
+    eprintln!("{:?}", bvh);
+
     let scale = 1.0 / samples_per_pixel as f32;
 
     let render_start = std::time::Instant::now();
@@ -96,7 +108,7 @@ fn main() {
                 let u = (x as f32 + rng.sample_01()) / ((img_w - 1) as f32);
                 let v = ((img_h - y) as f32 + rng.sample_01()) / ((img_h - 1) as f32);
                 let ray = cam.get_ray(u, v, &mut rng);
-                pixel + trace_ray(&ray, &hittables, &mut rng, 50)
+                pixel + trace_ray(&ray, &bvh, &mut rng, 50)
             };
             let sum = (0..samples_per_pixel).fold(Vec3::zero(), sample_pixel);
             let pixel = (sum * scale).sqrt();

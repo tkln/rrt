@@ -2,7 +2,7 @@ use crate::Vec3;
 use crate::Ray;
 use crate::material::Material;
 use crate::rng::RNG;
-use crate::bvh::AABB;
+use crate::aabb::AABB;
 
 pub struct HitRecord<'a> {
     pub p: Vec3,

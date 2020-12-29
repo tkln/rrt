@@ -3,7 +3,7 @@ use crate::Ray;
 use crate::hittable::{Hittable, HitRecord};
 use crate::material::Material;
 use crate::rng::RNG;
-use crate::bvh::AABB;
+use crate::aabb::AABB;
 
 pub struct Sphere<'a> {
     pub c: Vec3,

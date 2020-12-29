@@ -6,6 +6,7 @@ mod material;
 mod rng;
 mod camera;
 mod bvh;
+mod aabb;
 
 use ray::Ray;
 use vec3::Vec3;

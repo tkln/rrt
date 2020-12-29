@@ -69,4 +69,41 @@ impl AABB {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_single_sphere() {
+        use crate::Sphere;
+        use crate::material::Lambertian;
+        use crate::Vec3;
+        use crate::hittable::Hittable;
 
+        let mat = Lambertian::new(Vec3::new(0.2, 0.3, 0.7));
+
+        let sp = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 1.0, &mat);
+        let aabb = sp.get_aabb().unwrap();
+
+        assert_eq!(aabb.max, Vec3::new(1.0, 1.0, 1.0));
+        assert_eq!(aabb.min, Vec3::new(-1.0, -1.0, -1.0));
+    }
+
+    #[test]
+    fn test_union() {
+        use crate::Sphere;
+        use crate::material::Lambertian;
+        use crate::Vec3;
+        use crate::hittable::Hittable;
+        use crate::aabb::AABB;
+
+        let mat = Lambertian::new(Vec3::new(0.2, 0.3, 0.7));
+
+        let sp0 = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 1.0, &mat);
+        let sp1 = Sphere::new(Vec3::new(1.0, 0.0, 0.0), 1.0, &mat);
+        let aabb0 = sp0.get_aabb().unwrap();
+        let aabb1 = sp1.get_aabb().unwrap();
+        let aabb = AABB::union(&aabb0, &aabb1);
+
+        assert_eq!(aabb.max, Vec3::new(2.0, 1.0, 1.0));
+        assert_eq!(aabb.min, Vec3::new(-1.0, -1.0, -1.0));
+    }
+}

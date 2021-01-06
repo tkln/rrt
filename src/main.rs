@@ -7,6 +7,7 @@ mod rng;
 mod camera;
 mod bvh;
 mod aabb;
+mod tri;
 
 use ray::Ray;
 use vec3::Vec3;
@@ -16,6 +17,7 @@ use rng::*;
 use material::{Lambertian, Metal, Dielectric};
 use camera::Camera;
 use bvh::BVH;
+use tri::Tri;
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -76,6 +78,10 @@ fn main() {
     let sphere1 = Sphere::new(Vec3::new(1.0, 1.0, -1.0), 0.5, &(metal_g));
     let sphere2 = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, &(lambertian_b));
     let sphere3 = Sphere::new(Vec3::new(3.0, 0.0, -3.0), 0.5, &(metal_r));
+    let tri0 = Tri::new([Vec3::new(-1.0, 0.0, -0.0),
+                         Vec3::new(-1.0, 1.0, -0.0),
+                         Vec3::new(-0.0, 0.0, -0.0)],
+                        &(metal_r));
 
     let hittables = HittableList {
         hittables: vec![
@@ -92,6 +98,7 @@ fn main() {
             &sphere1,
             &sphere2,
             &sphere3,
+            &tri0,
             &sphere_large,
         ],
     );

@@ -18,7 +18,7 @@ pub struct AABB {
 
 impl AABB {
     pub fn new(min: Vec3, max: Vec3) -> AABB {
-        assert!(min.x < max.x && min.y < max.y && min.z < max.z);
+        assert!(min.x <= max.x && min.y <= max.y && min.z <= max.z);
         AABB { min, max }
     }
 

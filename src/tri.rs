@@ -52,7 +52,7 @@ impl Hittable for Tri<'_> {
 
         if t > t_min && t < t_max {
             let p = ray.at(t);
-            let n = (v1 - v0).cross(v2 - v0);
+            let n = (v1 - v0).cross(v2 - v0).normalized();
             Some(HitRecord::new(p, n, t, ray, self.mat))
         } else {
             None

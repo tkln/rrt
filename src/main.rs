@@ -8,6 +8,7 @@ mod camera;
 mod bvh;
 mod aabb;
 mod tri;
+mod mesh;
 
 use ray::Ray;
 use vec3::Vec3;
@@ -18,6 +19,7 @@ use material::{Lambertian, Metal, Dielectric};
 use camera::Camera;
 use bvh::BVH;
 use tri::Tri;
+use mesh::Mesh;
 
 fn save_image(w: usize, h: usize, pixels: &[Vec3]) {
     println!("P3");
@@ -51,17 +53,20 @@ fn trace_ray<T: Hittable>(ray: &Ray, hittables: &T, rng: &mut RNG, depth: u32) -
     Vec3::one() * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
 }
 
+
 fn main() {
     let img_ar = 16.0 / 9.0;
     let img_w = 400;
     let img_h = (img_w as f32  / img_ar) as usize;
     let mut img = vec![Vec3::zero(); img_w * img_h];
 
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 1;
 
     let mut rng = RNG::new();
 
-    let cam_pos = Vec3::new(3.0, 3.0, 2.0);
+    let teapot = Mesh::load_obj("teapot.obj").unwrap();
+
+    let cam_pos = Vec3::new(15.0, 2.0, 10.0);
     let cam_tgt = Vec3::new(0.0, 0.0, -1.0);
     let cam_up = Vec3::new(0.0, 1.0, 0.0);
     let cam_focus = (cam_tgt - cam_pos).len();
@@ -83,6 +88,31 @@ fn main() {
                          Vec3::new(-0.0, 0.0, -0.0)],
                         &(metal_r));
 
+    let mut teapot_tris = teapot.get_mesh(&dielectric);
+
+    let teapot_offset = Vec3::new(-1.0, 0.5, 1.0);
+    for tri in &mut teapot_tris {
+        tri.verts[0] -= teapot_offset;
+        tri.verts[1] -= teapot_offset;
+        tri.verts[2] -= teapot_offset;
+    }
+
+    let mut hittables: Vec<& dyn Hittable> = vec![
+        &sphere0,
+        &sphere1,
+        &sphere2,
+        &sphere3,
+        &tri0,
+        &sphere_large,
+    ];
+
+    for i in 0..teapot_tris.len() {
+        hittables.push(&teapot_tris[i]);
+    }
+
+    let bvh = BVH::new(hittables);
+
+    /*
     let hittables = HittableList {
         hittables: vec![
             &sphere0,
@@ -92,18 +122,7 @@ fn main() {
             &sphere_large,
         ],
     };
-
-    let bvh = BVH::new(vec![
-            &sphere0,
-            &sphere1,
-            &sphere2,
-            &sphere3,
-            &tri0,
-            &sphere_large,
-        ],
-    );
-
-    eprintln!("{:?}", bvh);
+    */
 
     let scale = 1.0 / samples_per_pixel as f32;
 

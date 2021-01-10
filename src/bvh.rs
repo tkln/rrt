@@ -13,18 +13,19 @@ pub enum BVH<'a> {
         aabb: AABB,
     },
     Leaf {
-        hittable: &'a dyn Hittable,
+        hittables: HittableList<'a>,
     }
 }
 
 impl BVH<'_> {
     pub fn new<'a>(items: Vec<&'a dyn Hittable>) -> BVH<'a> {
+        let leaf_size = 128;
         let mut objs = items;
         let span = objs.len();
 
-        if span == 1 {
+        if span <= leaf_size {
             return BVH::Leaf {
-                hittable: objs[0],
+                hittables: HittableList { hittables: objs },
             };
         }
 
@@ -44,11 +45,16 @@ impl BVH<'_> {
             }
         };
 
-        if span == 2 {
-            let a = Box::new(BVH::Leaf { hittable: objs[0] });
-            let b = Box::new(BVH::Leaf { hittable: objs[1] });
-            if cmp(objs[0].get_aabb().unwrap(),
-                   objs[1].get_aabb().unwrap()) == Ordering::Less {
+        let partition = span / 2;
+
+        if partition == leaf_size {
+            let a_hittables = HittableList { hittables: objs[..partition].to_vec() };
+            let b_hittables = HittableList { hittables: objs[partition..].to_vec() };
+            let a_aabb = a_hittables.get_aabb().unwrap();
+            let b_aabb = b_hittables.get_aabb().unwrap();
+            let a = Box::new(BVH::Leaf { hittables: a_hittables });
+            let b = Box::new(BVH::Leaf { hittables: b_hittables });
+            if cmp(a_aabb, b_aabb) == Ordering::Less {
                 return BVH::Node {
                     left: a,
                     right: b,
@@ -64,7 +70,6 @@ impl BVH<'_> {
         } else {
             objs.sort_by(|a, b| cmp(a.get_aabb().unwrap(),
                                     b.get_aabb().unwrap()));
-            let partition = span / 2;
 
             return BVH::Node {
                 left: Box::new(BVH::new(objs[..partition].to_vec())),
@@ -95,14 +100,14 @@ impl Hittable for BVH<'_> {
                 }
             }
 
-            BVH::Leaf { hittable } => hittable.hit(ray, t_min, t_max, rng),
+            BVH::Leaf { hittables } => hittables.hit(ray, t_min, t_max, rng),
         }
     }
 
     fn get_aabb(&self) -> Option<AABB> {
         match self {
             BVH::Node { left: _, right: _, aabb } => Some(*aabb),
-            BVH::Leaf { hittable } => hittable.get_aabb(),
+            BVH::Leaf { hittables } => hittables.get_aabb(),
         }
     }
 }
@@ -116,7 +121,7 @@ impl fmt::Debug for BVH<'_> {
              .field("right", &right)
              .field("aabb", &aabb)
              .finish(),
-            BVH::Leaf {hittable: _} =>
+            BVH::Leaf {hittables: _} =>
             f.debug_struct("Leaf").finish(),
         }
     }
